@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <PackageReference Include="FastEndpoints" Version="5.33.0" />
+    <PackageReference Include="FastEndpoints.Swagger" Version="5.33.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Imhotep.Application\Imhotep.Application.csproj" />
+    <ProjectReference Include="..\Imhotep.Infrastructure\Imhotep.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,29 @@
+import { defineConfig, devices } from '@playwright/test';
+
+/**
+ * E2E tests live in ./e2e and are NOT part of `npm run test` (vitest).
+ * Run them with `npm run e2e` (requires `npx playwright install` once).
+ * API calls are mocked with page.route(), so no backend is needed.
+ */
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: true,
+  forbidOnly: Boolean(process.env.CI),
+  retries: process.env.CI ? 2 : 0,
+  reporter: 'html',
+  use: {
+    baseURL: 'http://localhost:5173',
+    trace: 'on-first-retry',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI,
+  },
+});

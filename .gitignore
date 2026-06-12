@@ -1,0 +1,28 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+artifacts/
+
+# Node
+node_modules/
+dist/
+coverage/
+.playwright/
+playwright-report/
+test-results/
+
+# Env / secrets
+.env
+.env.local
+*.pfx
+appsettings.*.local.json
+
+# Storage (encrypted documents at runtime)
+backend/storage/
+
+# OS / editors
+.DS_Store
+.idea/

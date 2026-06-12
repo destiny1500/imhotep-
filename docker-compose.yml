@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: imhotep
+      POSTGRES_USER: imhotep
+      POSTGRES_PASSWORD: imhotep_dev_only
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U imhotep"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: src/Imhotep.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Database=imhotep;Username=imhotep;Password=imhotep_dev_only"
+      Jwt__SigningKey: "dev-only-signing-key-change-me-0123456789abcdef0123456789abcdef"
+      DocumentStorage__EncryptionKeyBase64: "Hl0vYJ4mYxqGdY0R0v9C8m3qWZ0n8mC8m3qWZ0n8mC8="
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
