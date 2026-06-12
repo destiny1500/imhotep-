@@ -30,7 +30,7 @@ Imhotep.Api ──▶ Imhotep.Application ──▶ Imhotep.Domain
 | Couche | Contenu | Règle |
 |---|---|---|
 | **Domain** | Entités, enums, logique métier pure (`Property.IsManagedBy`, lockout de `User`) | Zéro dépendance externe |
-| **Application** | Use cases CQRS (commands/queries MediatR), validateurs FluentValidation, DTOs, profils AutoMapper, interfaces (`IAppDbContext`, `IJwtTokenService`, …) | Ne connaît ni EF concret, ni HTTP |
+| **Application** | Use cases CQRS (commands/queries MediatR), validateurs FluentValidation, DTOs, mapping explicite (`EntityMapping` / `Projections`), interfaces (`IAppDbContext`, `IJwtTokenService`, …) | Ne connaît ni EF concret, ni HTTP |
 | **Infrastructure** | `AppDbContext` (Npgsql), PBKDF2, JWT, stockage chiffré AES-GCM | Implémente les interfaces d'Application |
 | **Api** | Endpoints FastEndpoints (mapping HTTP pur), Program.cs, middleware d'exceptions, `CurrentUserService` | Aucune logique métier |
 
@@ -49,7 +49,9 @@ Endpoint ──▶ ValidationBehavior ──▶ Handler ──▶ AuditBehavior 
 
 - **Commands** (écritures) implémentent `IAuditableCommand` → journalisées dans `AuditLogs`
   (action, utilisateur, IP, horodatage — jamais le payload, pour ne pas persister de secrets).
-- **Queries** (lectures) utilisent `AsNoTracking()` + `ProjectTo<>` (projection SQL directe vers DTO).
+- **Queries** (lectures) utilisent `AsNoTracking()` + projections explicites traduites en SQL
+  (`Select(Projections.ToXxxDto)`) — AutoMapper a été écarté volontairement
+  (vulnérabilité GHSA-rvv3-g6hj-g44x corrigée uniquement dans les versions sous licence commerciale).
 
 ## Découpage en modules (features)
 

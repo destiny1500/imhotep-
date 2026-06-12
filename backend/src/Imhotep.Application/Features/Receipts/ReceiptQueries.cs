@@ -1,7 +1,6 @@
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using MediatR;
@@ -13,7 +12,7 @@ namespace Imhotep.Application.Features.Receipts;
 
 public record GetMyReceiptsQuery : IRequest<IReadOnlyList<ReceiptDto>>;
 
-public class GetMyReceiptsQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class GetMyReceiptsQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<GetMyReceiptsQuery, IReadOnlyList<ReceiptDto>>
 {
     public async Task<IReadOnlyList<ReceiptDto>> Handle(GetMyReceiptsQuery request, CancellationToken ct)
@@ -22,14 +21,14 @@ public class GetMyReceiptsQueryHandler(IAppDbContext db, ICurrentUserService cur
         return await db.RentReceipts.AsNoTracking()
             .Where(r => r.Lease.TenantId == userId)
             .OrderByDescending(r => r.IssuedAtUtc)
-            .ProjectTo<ReceiptDto>(mapper.ConfigurationProvider)
+            .Select(Projections.ToReceiptDto)
             .ToListAsync(ct);
     }
 }
 
 public record ListReceiptsQuery(Guid LeaseId) : IRequest<IReadOnlyList<ReceiptDto>>;
 
-public class ListReceiptsQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class ListReceiptsQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<ListReceiptsQuery, IReadOnlyList<ReceiptDto>>
 {
     public async Task<IReadOnlyList<ReceiptDto>> Handle(ListReceiptsQuery request, CancellationToken ct)
@@ -45,7 +44,7 @@ public class ListReceiptsQueryHandler(IAppDbContext db, ICurrentUserService curr
         return await db.RentReceipts.AsNoTracking()
             .Where(r => r.LeaseId == request.LeaseId)
             .OrderByDescending(r => r.IssuedAtUtc)
-            .ProjectTo<ReceiptDto>(mapper.ConfigurationProvider)
+            .Select(Projections.ToReceiptDto)
             .ToListAsync(ct);
     }
 }

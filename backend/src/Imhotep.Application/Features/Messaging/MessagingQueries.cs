@@ -1,7 +1,6 @@
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using MediatR;
@@ -11,7 +10,7 @@ namespace Imhotep.Application.Features.Messaging;
 
 public record ListConversationsQuery : IRequest<IReadOnlyList<ConversationDto>>;
 
-public class ListConversationsQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class ListConversationsQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<ListConversationsQuery, IReadOnlyList<ConversationDto>>
 {
     public async Task<IReadOnlyList<ConversationDto>> Handle(ListConversationsQuery request, CancellationToken ct)
@@ -22,13 +21,13 @@ public class ListConversationsQueryHandler(IAppDbContext db, ICurrentUserService
             .Where(c => c.Participants.Any(p => p.UserId == userId))
             .OrderByDescending(c => c.LastMessageAtUtc)
             .ToListAsync(ct);
-        return conversations.Select(mapper.Map<ConversationDto>).ToList();
+        return conversations.Select(c => c.ToDto()).ToList();
     }
 }
 
 public record GetMessagesQuery(Guid ConversationId) : IRequest<IReadOnlyList<MessageDto>>;
 
-public class GetMessagesQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class GetMessagesQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<GetMessagesQuery, IReadOnlyList<MessageDto>>
 {
     public async Task<IReadOnlyList<MessageDto>> Handle(GetMessagesQuery request, CancellationToken ct)
@@ -42,7 +41,7 @@ public class GetMessagesQueryHandler(IAppDbContext db, ICurrentUserService curre
         return await db.Messages.AsNoTracking()
             .Where(m => m.ConversationId == request.ConversationId)
             .OrderBy(m => m.SentAtUtc)
-            .ProjectTo<MessageDto>(mapper.ConfigurationProvider)
+            .Select(Projections.ToMessageDto)
             .ToListAsync(ct);
     }
 }

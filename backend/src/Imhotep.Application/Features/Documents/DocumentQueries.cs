@@ -1,7 +1,6 @@
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using MediatR;
@@ -11,7 +10,7 @@ namespace Imhotep.Application.Features.Documents;
 
 public record ListDocumentsQuery(Guid? PropertyId, Guid? LeaseId) : IRequest<IReadOnlyList<DocumentDto>>;
 
-public class ListDocumentsQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class ListDocumentsQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<ListDocumentsQuery, IReadOnlyList<DocumentDto>>
 {
     public async Task<IReadOnlyList<DocumentDto>> Handle(ListDocumentsQuery request, CancellationToken ct)
@@ -52,7 +51,7 @@ public class ListDocumentsQueryHandler(IAppDbContext db, ICurrentUserService cur
 
         return await query
             .OrderByDescending(d => d.CreatedAt)
-            .ProjectTo<DocumentDto>(mapper.ConfigurationProvider)
+            .Select(Projections.ToDocumentDto)
             .ToListAsync(ct);
     }
 }

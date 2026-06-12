@@ -1,7 +1,6 @@
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using MediatR;
@@ -11,7 +10,7 @@ namespace Imhotep.Application.Features.Properties;
 
 public record ListPropertiesQuery : IRequest<IReadOnlyList<PropertyDto>>;
 
-public class ListPropertiesQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class ListPropertiesQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<ListPropertiesQuery, IReadOnlyList<PropertyDto>>
 {
     public async Task<IReadOnlyList<PropertyDto>> Handle(ListPropertiesQuery request, CancellationToken ct)
@@ -21,14 +20,14 @@ public class ListPropertiesQueryHandler(IAppDbContext db, ICurrentUserService cu
         return await db.Properties.AsNoTracking()
             .Where(p => p.OwnerId == userId || p.ManagingAgencyId == userId)
             .OrderBy(p => p.Label)
-            .ProjectTo<PropertyDto>(mapper.ConfigurationProvider)
+            .Select(Projections.ToPropertyDto)
             .ToListAsync(ct);
     }
 }
 
 public record GetPropertyQuery(Guid Id) : IRequest<PropertyDto>;
 
-public class GetPropertyQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class GetPropertyQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<GetPropertyQuery, PropertyDto>
 {
     public async Task<PropertyDto> Handle(GetPropertyQuery request, CancellationToken ct)
@@ -44,6 +43,6 @@ public class GetPropertyQueryHandler(IAppDbContext db, ICurrentUserService curre
         if (!property.IsManagedBy(userId) && !isTenantOfProperty)
             throw new NotFoundException(nameof(Property), request.Id);
 
-        return mapper.Map<PropertyDto>(property);
+        return property.ToDto();
     }
 }

@@ -1,8 +1,8 @@
-using AutoMapper;
 using FluentValidation;
 using Imhotep.Application.Common.Behaviors;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using Imhotep.Domain.Enums;
@@ -35,7 +35,7 @@ public class RecordPaymentCommandValidator : AbstractValidator<RecordPaymentComm
     }
 }
 
-public class RecordPaymentCommandHandler(IAppDbContext db, ICurrentUserService currentUser, IClock clock, IMapper mapper)
+public class RecordPaymentCommandHandler(IAppDbContext db, ICurrentUserService currentUser, IClock clock)
     : IRequestHandler<RecordPaymentCommand, PaymentDto>
 {
     public async Task<PaymentDto> Handle(RecordPaymentCommand request, CancellationToken ct)
@@ -79,6 +79,6 @@ public class RecordPaymentCommandHandler(IAppDbContext db, ICurrentUserService c
             CreatedAt = clock.UtcNow
         });
         await db.SaveChangesAsync(ct);
-        return mapper.Map<PaymentDto>(payment);
+        return payment.ToDto();
     }
 }

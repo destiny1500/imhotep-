@@ -27,7 +27,7 @@ public class LoginAndRefreshTests : IDisposable
     }
 
     private LoginCommandHandler LoginHandler() =>
-        new(_db.Context, _hasher, _tokens, _currentUser, _clock, TestMapper.Create());
+        new(_db.Context, _hasher, _tokens, _currentUser, _clock);
 
     private RefreshTokenCommandHandler RefreshHandler() =>
         new(_db.Context, _tokens, _currentUser, _clock);

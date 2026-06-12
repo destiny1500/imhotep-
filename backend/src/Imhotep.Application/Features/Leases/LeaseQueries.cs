@@ -1,7 +1,6 @@
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using Imhotep.Domain.Enums;
@@ -12,7 +11,7 @@ namespace Imhotep.Application.Features.Leases;
 
 public record ListLeasesQuery(Guid PropertyId) : IRequest<IReadOnlyList<LeaseDto>>;
 
-public class ListLeasesQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class ListLeasesQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<ListLeasesQuery, IReadOnlyList<LeaseDto>>
 {
     public async Task<IReadOnlyList<LeaseDto>> Handle(ListLeasesQuery request, CancellationToken ct)
@@ -27,7 +26,7 @@ public class ListLeasesQueryHandler(IAppDbContext db, ICurrentUserService curren
         return await db.Leases.AsNoTracking()
             .Where(l => l.PropertyId == request.PropertyId)
             .OrderByDescending(l => l.StartDate)
-            .ProjectTo<LeaseDto>(mapper.ConfigurationProvider)
+            .Select(Projections.ToLeaseDto)
             .ToListAsync(ct);
     }
 }
@@ -35,7 +34,7 @@ public class ListLeasesQueryHandler(IAppDbContext db, ICurrentUserService curren
 /// <summary>Tenant view: their active lease with housing information.</summary>
 public record GetMyLeaseQuery : IRequest<MyLeaseDto?>;
 
-public class GetMyLeaseQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class GetMyLeaseQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<GetMyLeaseQuery, MyLeaseDto?>
 {
     public async Task<MyLeaseDto?> Handle(GetMyLeaseQuery request, CancellationToken ct)
@@ -53,8 +52,8 @@ public class GetMyLeaseQueryHandler(IAppDbContext db, ICurrentUserService curren
             return null;
 
         return new MyLeaseDto(
-            mapper.Map<LeaseDto>(lease),
-            mapper.Map<PropertyDto>(lease.Property),
+            lease.ToDto(),
+            lease.Property.ToDto(),
             lease.Property.Owner.FullName,
             lease.Property.ManagingAgency?.FullName);
     }

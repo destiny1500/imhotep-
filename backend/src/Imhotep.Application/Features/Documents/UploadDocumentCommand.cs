@@ -1,8 +1,8 @@
-using AutoMapper;
 using FluentValidation;
 using Imhotep.Application.Common.Behaviors;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using Imhotep.Domain.Enums;
@@ -52,8 +52,7 @@ public class UploadDocumentCommandHandler(
     IAppDbContext db,
     ICurrentUserService currentUser,
     IDocumentStorageService storage,
-    IClock clock,
-    IMapper mapper)
+    IClock clock)
     : IRequestHandler<UploadDocumentCommand, DocumentDto>
 {
     public async Task<DocumentDto> Handle(UploadDocumentCommand request, CancellationToken ct)
@@ -111,6 +110,6 @@ public class UploadDocumentCommandHandler(
         }
 
         await db.SaveChangesAsync(ct);
-        return mapper.Map<DocumentDto>(document);
+        return document.ToDto();
     }
 }

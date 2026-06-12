@@ -1,8 +1,8 @@
-using AutoMapper;
 using FluentValidation;
 using Imhotep.Application.Common.Behaviors;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using Imhotep.Domain.Enums;
@@ -50,7 +50,7 @@ public class UpdatePropertyCommandValidator : AbstractValidator<UpdatePropertyCo
     }
 }
 
-public class UpdatePropertyCommandHandler(IAppDbContext db, ICurrentUserService currentUser, IClock clock, IMapper mapper)
+public class UpdatePropertyCommandHandler(IAppDbContext db, ICurrentUserService currentUser, IClock clock)
     : IRequestHandler<UpdatePropertyCommand, PropertyDto>
 {
     public async Task<PropertyDto> Handle(UpdatePropertyCommand request, CancellationToken ct)
@@ -77,6 +77,6 @@ public class UpdatePropertyCommandHandler(IAppDbContext db, ICurrentUserService 
         property.UpdatedAt = clock.UtcNow;
 
         await db.SaveChangesAsync(ct);
-        return mapper.Map<PropertyDto>(property);
+        return property.ToDto();
     }
 }

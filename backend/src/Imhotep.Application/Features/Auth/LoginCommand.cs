@@ -1,8 +1,8 @@
-using AutoMapper;
 using FluentValidation;
 using Imhotep.Application.Common.Behaviors;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using MediatR;
@@ -29,8 +29,7 @@ public class LoginCommandHandler(
     IPasswordHasher hasher,
     IJwtTokenService tokens,
     ICurrentUserService currentUser,
-    IClock clock,
-    IMapper mapper)
+    IClock clock)
     : IRequestHandler<LoginCommand, AuthResultDto>
 {
     private const int MaxFailedAttempts = 5;
@@ -70,6 +69,6 @@ public class LoginCommandHandler(
         });
         await db.SaveChangesAsync(ct);
 
-        return new AuthResultDto(accessToken, rawRefresh, mapper.Map<UserDto>(user));
+        return new AuthResultDto(accessToken, rawRefresh, user.ToDto());
     }
 }

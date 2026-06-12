@@ -1,7 +1,6 @@
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using MediatR;
@@ -11,7 +10,7 @@ namespace Imhotep.Application.Features.Payments;
 
 public record ListPaymentsQuery(Guid LeaseId) : IRequest<IReadOnlyList<PaymentDto>>;
 
-public class ListPaymentsQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class ListPaymentsQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<ListPaymentsQuery, IReadOnlyList<PaymentDto>>
 {
     public async Task<IReadOnlyList<PaymentDto>> Handle(ListPaymentsQuery request, CancellationToken ct)
@@ -29,7 +28,7 @@ public class ListPaymentsQueryHandler(IAppDbContext db, ICurrentUserService curr
         return await db.Payments.AsNoTracking()
             .Where(p => p.LeaseId == request.LeaseId)
             .OrderByDescending(p => p.PeriodYear).ThenByDescending(p => p.PeriodMonth)
-            .ProjectTo<PaymentDto>(mapper.ConfigurationProvider)
+            .Select(Projections.ToPaymentDto)
             .ToListAsync(ct);
     }
 }
@@ -37,7 +36,7 @@ public class ListPaymentsQueryHandler(IAppDbContext db, ICurrentUserService curr
 /// <summary>Tenant payment history across their leases.</summary>
 public record GetMyPaymentsQuery : IRequest<IReadOnlyList<PaymentDto>>;
 
-public class GetMyPaymentsQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class GetMyPaymentsQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<GetMyPaymentsQuery, IReadOnlyList<PaymentDto>>
 {
     public async Task<IReadOnlyList<PaymentDto>> Handle(GetMyPaymentsQuery request, CancellationToken ct)
@@ -46,7 +45,7 @@ public class GetMyPaymentsQueryHandler(IAppDbContext db, ICurrentUserService cur
         return await db.Payments.AsNoTracking()
             .Where(p => p.Lease.TenantId == userId)
             .OrderByDescending(p => p.PeriodYear).ThenByDescending(p => p.PeriodMonth)
-            .ProjectTo<PaymentDto>(mapper.ConfigurationProvider)
+            .Select(Projections.ToPaymentDto)
             .ToListAsync(ct);
     }
 }

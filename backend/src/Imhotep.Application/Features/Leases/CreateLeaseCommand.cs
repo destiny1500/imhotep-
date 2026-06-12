@@ -1,8 +1,8 @@
-using AutoMapper;
 using FluentValidation;
 using Imhotep.Application.Common.Behaviors;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using Imhotep.Domain.Enums;
@@ -41,7 +41,7 @@ public class CreateLeaseCommandValidator : AbstractValidator<CreateLeaseCommand>
     }
 }
 
-public class CreateLeaseCommandHandler(IAppDbContext db, ICurrentUserService currentUser, IClock clock, IMapper mapper)
+public class CreateLeaseCommandHandler(IAppDbContext db, ICurrentUserService currentUser, IClock clock)
     : IRequestHandler<CreateLeaseCommand, LeaseDto>
 {
     public async Task<LeaseDto> Handle(CreateLeaseCommand request, CancellationToken ct)
@@ -87,6 +87,6 @@ public class CreateLeaseCommandHandler(IAppDbContext db, ICurrentUserService cur
             CreatedAt = clock.UtcNow
         });
         await db.SaveChangesAsync(ct);
-        return mapper.Map<LeaseDto>(lease);
+        return lease.ToDto();
     }
 }

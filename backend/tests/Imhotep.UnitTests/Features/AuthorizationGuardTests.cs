@@ -37,7 +37,7 @@ public class AuthorizationGuardTests : IDisposable
         var (_, strangerId, propertyId, _) = SeedScenario();
         _currentUser.UserId = strangerId;
 
-        var handler = new GetPropertyQueryHandler(_db.Context, _currentUser, TestMapper.Create());
+        var handler = new GetPropertyQueryHandler(_db.Context, _currentUser);
         var act = () => handler.Handle(new GetPropertyQuery(propertyId), CancellationToken.None);
         await act.Should().ThrowAsync<NotFoundException>();
     }
@@ -48,7 +48,7 @@ public class AuthorizationGuardTests : IDisposable
         var (ownerId, _, propertyId, _) = SeedScenario();
         _currentUser.UserId = ownerId;
 
-        var handler = new GetPropertyQueryHandler(_db.Context, _currentUser, TestMapper.Create());
+        var handler = new GetPropertyQueryHandler(_db.Context, _currentUser);
         var dto = await handler.Handle(new GetPropertyQuery(propertyId), CancellationToken.None);
         dto.Id.Should().Be(propertyId);
     }
@@ -59,7 +59,7 @@ public class AuthorizationGuardTests : IDisposable
         var (_, strangerId, _, leaseId) = SeedScenario();
         _currentUser.UserId = strangerId;
 
-        var handler = new RecordPaymentCommandHandler(_db.Context, _currentUser, _clock, TestMapper.Create());
+        var handler = new RecordPaymentCommandHandler(_db.Context, _currentUser, _clock);
         var act = () => handler.Handle(
             new RecordPaymentCommand(leaseId, 850, 2026, 6, _clock.UtcNow, PaymentMethod.BankTransfer),
             CancellationToken.None);
@@ -72,11 +72,11 @@ public class AuthorizationGuardTests : IDisposable
         var (ownerId, _, _, leaseId) = SeedScenario();
         _currentUser.UserId = ownerId;
 
-        var payment = await new RecordPaymentCommandHandler(_db.Context, _currentUser, _clock, TestMapper.Create())
+        var payment = await new RecordPaymentCommandHandler(_db.Context, _currentUser, _clock)
             .Handle(new RecordPaymentCommand(leaseId, 850, 2026, 6, _clock.UtcNow, PaymentMethod.BankTransfer),
                 CancellationToken.None);
 
-        var receiptHandler = new GenerateReceiptCommandHandler(_db.Context, _currentUser, _clock, TestMapper.Create());
+        var receiptHandler = new GenerateReceiptCommandHandler(_db.Context, _currentUser, _clock);
         var receipt = await receiptHandler.Handle(new GenerateReceiptCommand(payment.Id), CancellationToken.None);
         receipt.Number.Should().MatchRegex(@"^Q-\d{4}-\d{6}$");
 
@@ -89,7 +89,7 @@ public class AuthorizationGuardTests : IDisposable
     {
         var (ownerId, _, _, leaseId) = SeedScenario();
         _currentUser.UserId = ownerId;
-        var handler = new RecordPaymentCommandHandler(_db.Context, _currentUser, _clock, TestMapper.Create());
+        var handler = new RecordPaymentCommandHandler(_db.Context, _currentUser, _clock);
         var command = new RecordPaymentCommand(leaseId, 850, 2026, 6, _clock.UtcNow, PaymentMethod.BankTransfer);
 
         await handler.Handle(command, CancellationToken.None);

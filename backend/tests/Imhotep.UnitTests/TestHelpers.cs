@@ -1,6 +1,4 @@
-using AutoMapper;
 using Imhotep.Application.Common.Interfaces;
-using Imhotep.Application.Common.Mappings;
 using Imhotep.Domain.Entities;
 using Imhotep.Domain.Enums;
 using Imhotep.Infrastructure.Persistence;
@@ -44,12 +42,6 @@ public sealed class TestDb : IDisposable
         Context.Dispose();
         _connection.Dispose();
     }
-}
-
-public static class TestMapper
-{
-    public static IMapper Create() =>
-        new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
 }
 
 public static class Seed

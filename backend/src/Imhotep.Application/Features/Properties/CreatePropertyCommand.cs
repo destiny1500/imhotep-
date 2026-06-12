@@ -1,7 +1,7 @@
-using AutoMapper;
 using FluentValidation;
 using Imhotep.Application.Common.Behaviors;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using Imhotep.Domain.Enums;
@@ -47,8 +47,7 @@ public class CreatePropertyCommandValidator : AbstractValidator<CreatePropertyCo
 public class CreatePropertyCommandHandler(
     IAppDbContext db,
     ICurrentUserService currentUser,
-    IClock clock,
-    IMapper mapper)
+    IClock clock)
     : IRequestHandler<CreatePropertyCommand, PropertyDto>
 {
     public async Task<PropertyDto> Handle(CreatePropertyCommand request, CancellationToken ct)
@@ -71,6 +70,6 @@ public class CreatePropertyCommandHandler(
         };
         db.Properties.Add(property);
         await db.SaveChangesAsync(ct);
-        return mapper.Map<PropertyDto>(property);
+        return property.ToDto();
     }
 }

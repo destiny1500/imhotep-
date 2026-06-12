@@ -1,7 +1,6 @@
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using MediatR;
@@ -11,7 +10,7 @@ namespace Imhotep.Application.Features.Notifications;
 
 public record ListNotificationsQuery : IRequest<IReadOnlyList<NotificationDto>>;
 
-public class ListNotificationsQueryHandler(IAppDbContext db, ICurrentUserService currentUser, IMapper mapper)
+public class ListNotificationsQueryHandler(IAppDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<ListNotificationsQuery, IReadOnlyList<NotificationDto>>
 {
     public async Task<IReadOnlyList<NotificationDto>> Handle(ListNotificationsQuery request, CancellationToken ct)
@@ -21,7 +20,7 @@ public class ListNotificationsQueryHandler(IAppDbContext db, ICurrentUserService
             .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.CreatedAt)
             .Take(100)
-            .ProjectTo<NotificationDto>(mapper.ConfigurationProvider)
+            .Select(Projections.ToNotificationDto)
             .ToListAsync(ct);
     }
 }

@@ -1,8 +1,8 @@
-using AutoMapper;
 using FluentValidation;
 using Imhotep.Application.Common.Behaviors;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Mappings;
 using Imhotep.Application.Common.Models;
 using Imhotep.Domain.Entities;
 using Imhotep.Domain.Enums;
@@ -26,7 +26,7 @@ public class GenerateReceiptCommandValidator : AbstractValidator<GenerateReceipt
     }
 }
 
-public class GenerateReceiptCommandHandler(IAppDbContext db, ICurrentUserService currentUser, IClock clock, IMapper mapper)
+public class GenerateReceiptCommandHandler(IAppDbContext db, ICurrentUserService currentUser, IClock clock)
     : IRequestHandler<GenerateReceiptCommand, ReceiptDto>
 {
     public async Task<ReceiptDto> Handle(GenerateReceiptCommand request, CancellationToken ct)
@@ -73,6 +73,6 @@ public class GenerateReceiptCommandHandler(IAppDbContext db, ICurrentUserService
             CreatedAt = now
         });
         await db.SaveChangesAsync(ct);
-        return mapper.Map<ReceiptDto>(receipt);
+        return receipt.ToDto();
     }
 }
