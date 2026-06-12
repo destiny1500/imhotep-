@@ -9,6 +9,18 @@ import { Input } from '@/shared/components/Input';
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
 import { ErrorState } from '@/shared/components/EmptyState';
+import { getApiErrorStatus } from '@/shared/api/errors';
+
+function leaseCreateErrorMessage(error: unknown): string {
+  switch (getApiErrorStatus(error)) {
+    case 404:
+      return "Aucun compte locataire n'existe avec cet e-mail. Le locataire doit d'abord créer son compte (rôle « Locataire ») avec cette adresse.";
+    case 409:
+      return 'Ce bien a déjà un bail actif.';
+    default:
+      return 'La création du bail a échoué.';
+  }
+}
 
 export function LeaseCreatePage() {
   const { id: propertyId } = useParams<{ id: string }>();
@@ -83,7 +95,7 @@ export function LeaseCreatePage() {
             <Input label="Dépôt de garantie (€)" type="number" step="0.01" min="0" error={errors.depositAmount?.message} {...register('depositAmount')} />
           </div>
 
-          {create.isError && <ErrorState message="La création du bail a échoué." />}
+          {create.isError && <ErrorState message={leaseCreateErrorMessage(create.error)} />}
 
           <div className="flex justify-end gap-2">
             <Link to={`/properties/${propertyId}`}>
