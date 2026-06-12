@@ -40,6 +40,28 @@ builder.Services
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30)
         };
+        options.Events = new JwtBearerEvents
+        {
+            // A signed token is not enough: the user behind it must still exist and
+            // be active (deactivated account, database reset, …) — otherwise requests
+            // would reach handlers with a ghost identity and die in FK violations (500).
+            OnTokenValidated = async context =>
+            {
+                var userIdValue = context.Principal?
+                    .FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    context.Fail("Invalid token.");
+                    return;
+                }
+
+                var db = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                var userIsActive = await db.Users.AsNoTracking()
+                    .AnyAsync(u => u.Id == userId && u.IsActive);
+                if (!userIsActive)
+                    context.Fail("Unknown or inactive user.");
+            }
+        };
     });
 builder.Services.AddAuthorization();
 

@@ -1,4 +1,7 @@
 using FluentAssertions;
+using Imhotep.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 using Xunit;
@@ -94,6 +97,26 @@ public class SecurityTests : IClassFixture<TestWebAppFactory>
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "forged.invalid.token");
+        var response = await client.GetAsync("/api/users/me");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Token_of_a_user_who_no_longer_exists_is_rejected_401()
+    {
+        // A valid signed JWT must stop working the moment its user disappears
+        // (account deleted, database reset) — 401, never a 500 on FK violations.
+        var client = await _factory.RegisterAndLoginAsync("ghost@test.fr", "Owner");
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var ghost = await db.Users.SingleAsync(u => u.Email == "ghost@test.fr");
+            db.RefreshTokens.RemoveRange(db.RefreshTokens.Where(t => t.UserId == ghost.Id));
+            db.Users.Remove(ghost);
+            await db.SaveChangesAsync();
+        }
+
         var response = await client.GetAsync("/api/users/me");
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
