@@ -19,9 +19,12 @@ public static class EntityMapping
             p.City, p.PostalCode, p.Country, p.Type, p.Status, p.SurfaceM2, p.Rooms,
             p.RentAmount, p.ChargesAmount);
 
-    /// <summary>Requires <see cref="Lease.Tenant"/> to be loaded.</summary>
+    /// <summary>Requires <see cref="Lease.Tenant"/> to be loaded. Falls back to the
+    /// e-mail while an invited tenant hasn't filled in their name yet.</summary>
     public static LeaseDto ToDto(this Lease l) =>
-        new(l.Id, l.PropertyId, l.TenantId, l.Tenant.FullName, l.StartDate, l.EndDate,
+        new(l.Id, l.PropertyId, l.TenantId,
+            l.Tenant.FirstName.Length == 0 ? l.Tenant.Email : l.Tenant.FullName,
+            l.StartDate, l.EndDate,
             l.RentAmount, l.ChargesAmount, l.DepositAmount, l.Status);
 
     public static PaymentDto ToDto(this Payment p) =>
@@ -61,7 +64,10 @@ public static class Projections
 
     public static readonly Expression<Func<Lease, LeaseDto>> ToLeaseDto =
         l => new LeaseDto(l.Id, l.PropertyId, l.TenantId,
-            l.Tenant.FirstName + " " + l.Tenant.LastName, l.StartDate, l.EndDate,
+            l.Tenant.FirstName == ""
+                ? l.Tenant.Email
+                : l.Tenant.FirstName + " " + l.Tenant.LastName,
+            l.StartDate, l.EndDate,
             l.RentAmount, l.ChargesAmount, l.DepositAmount, l.Status);
 
     public static readonly Expression<Func<Payment, PaymentDto>> ToPaymentDto =

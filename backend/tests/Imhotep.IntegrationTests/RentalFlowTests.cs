@@ -49,7 +49,9 @@ public class RentalFlowTests : IClassFixture<TestWebAppFactory>
             depositAmount = 950
         });
         leaseResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        var lease = await leaseResponse.Content.ReadFromJsonAsync<IdHolder>();
+        var leaseResult = await leaseResponse.Content.ReadFromJsonAsync<CreateLeaseResult>();
+        leaseResult!.InvitationUrl.Should().BeNull("the tenant already has an account");
+        var lease = leaseResult.Lease;
 
         // 3. Tenant sees their housing info.
         var myLease = await tenant.GetAsync("/api/leases/my");
@@ -98,4 +100,5 @@ public class RentalFlowTests : IClassFixture<TestWebAppFactory>
     }
 
     private record IdHolder(Guid Id);
+    private record CreateLeaseResult(IdHolder Lease, string? InvitationUrl);
 }

@@ -10,6 +10,7 @@ public interface IAppDbContext
     DbSet<Property> Properties { get; }
     DbSet<ManagementContract> ManagementContracts { get; }
     DbSet<Lease> Leases { get; }
+    DbSet<LeaseInvitation> LeaseInvitations { get; }
     DbSet<Payment> Payments { get; }
     DbSet<RentReceipt> RentReceipts { get; }
     DbSet<Document> Documents { get; }

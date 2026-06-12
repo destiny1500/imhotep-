@@ -79,6 +79,20 @@ public class LeaseConfiguration : IEntityTypeConfiguration<Lease>
     }
 }
 
+public class LeaseInvitationConfiguration : IEntityTypeConfiguration<LeaseInvitation>
+{
+    public void Configure(EntityTypeBuilder<LeaseInvitation> b)
+    {
+        b.Property(i => i.Email).HasMaxLength(254).IsRequired();
+        b.Property(i => i.TokenHash).HasMaxLength(128).IsRequired();
+        b.HasIndex(i => i.TokenHash).IsUnique();
+        b.HasOne(i => i.Lease).WithMany()
+            .HasForeignKey(i => i.LeaseId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(i => i.InvitedBy).WithMany()
+            .HasForeignKey(i => i.InvitedById).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
 public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 {
     public void Configure(EntityTypeBuilder<Payment> b)

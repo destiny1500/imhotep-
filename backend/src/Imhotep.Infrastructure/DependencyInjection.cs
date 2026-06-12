@@ -18,11 +18,14 @@ public static class DependencyInjection
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.Configure<DocumentStorageOptions>(configuration.GetSection(DocumentStorageOptions.SectionName));
+        services.Configure<FrontendOptions>(configuration.GetSection(FrontendOptions.SectionName));
 
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddSingleton<IDocumentStorageService, EncryptedDocumentStorageService>();
+        services.AddSingleton<IInvitationLinkBuilder, InvitationLinkBuilder>();
+        services.AddSingleton<IEmailSender, LoggingEmailSender>();
 
         return services;
     }

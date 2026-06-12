@@ -2,6 +2,7 @@ using FluentValidation;
 using Imhotep.Application.Common.Behaviors;
 using Imhotep.Application.Common.Exceptions;
 using Imhotep.Application.Common.Interfaces;
+using Imhotep.Application.Common.Validation;
 using Imhotep.Domain.Entities;
 using Imhotep.Domain.Enums;
 using MediatR;
@@ -31,13 +32,7 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
         RuleFor(x => x.Role)
             .Must(r => r is UserRole.Tenant or UserRole.Owner or UserRole.Agency)
             .WithMessage("Role must be Tenant, Owner or Agency.");
-        RuleFor(x => x.Password)
-            .NotEmpty()
-            .MinimumLength(12).WithMessage("Password must be at least 12 characters.")
-            .Matches("[A-Z]").WithMessage("Password must contain an uppercase letter.")
-            .Matches("[a-z]").WithMessage("Password must contain a lowercase letter.")
-            .Matches("[0-9]").WithMessage("Password must contain a digit.")
-            .Matches("[^a-zA-Z0-9]").WithMessage("Password must contain a symbol.");
+        RuleFor(x => x.Password).StrongPassword();
     }
 }
 

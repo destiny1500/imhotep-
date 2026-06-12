@@ -5,6 +5,7 @@ import { useAuthStore } from '@/features/auth/auth.store';
 import { homePathForRole } from '@/features/auth/useAuth';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
+import { InvitationPage } from '@/features/invitations/InvitationPage';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { PropertiesPage } from '@/features/properties/PropertiesPage';
 import { PropertyDetailPage } from '@/features/properties/PropertyDetailPage';
@@ -30,6 +31,7 @@ export function AppRouter() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/invitation/:token" element={<InvitationPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>

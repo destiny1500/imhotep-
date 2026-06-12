@@ -34,7 +34,7 @@ public record CreateLeaseRequest(
     decimal ChargesAmount,
     decimal DepositAmount);
 
-public class CreateLeaseEndpoint(ISender sender) : Endpoint<CreateLeaseRequest, LeaseDto>
+public class CreateLeaseEndpoint(ISender sender) : Endpoint<CreateLeaseRequest, CreateLeaseResultDto>
 {
     public override void Configure()
     {
@@ -44,10 +44,10 @@ public class CreateLeaseEndpoint(ISender sender) : Endpoint<CreateLeaseRequest, 
 
     public override async Task HandleAsync(CreateLeaseRequest req, CancellationToken ct)
     {
-        var dto = await sender.Send(new CreateLeaseCommand(
+        var result = await sender.Send(new CreateLeaseCommand(
             req.PropertyId, req.TenantEmail, req.StartDate, req.EndDate,
             req.RentAmount, req.ChargesAmount, req.DepositAmount), ct);
-        await SendAsync(dto, StatusCodes.Status201Created, ct);
+        await SendAsync(result, StatusCodes.Status201Created, ct);
     }
 }
 

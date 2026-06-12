@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -14,18 +15,64 @@ import { getApiErrorStatus } from '@/shared/api/errors';
 function leaseCreateErrorMessage(error: unknown): string {
   switch (getApiErrorStatus(error)) {
     case 404:
-      return "Aucun compte locataire n'existe avec cet e-mail. Le locataire doit d'abord créer son compte (rôle « Locataire ») avec cette adresse.";
+      return 'Bien introuvable.';
     case 409:
-      return 'Ce bien a déjà un bail actif.';
+      return "Création impossible : ce bien a déjà un bail actif ou en attente, ou cet e-mail appartient à un compte qui n'est pas un compte locataire.";
     default:
       return 'La création du bail a échoué.';
   }
+}
+
+/** Shown when the tenant has no account yet: the lease is pending and the
+ * invitation link must reach the tenant (it is also e-mailed by the backend). */
+function InvitationLinkPanel({ url, propertyId }: { url: string; propertyId: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard unavailable (http, permissions): the link stays selectable below
+    }
+  };
+
+  return (
+    <Card>
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-slate-900">Bail créé — en attente du locataire</h2>
+        <p className="text-sm text-slate-600">
+          Ce locataire n'a pas encore de compte. Transmettez-lui ce lien d'invitation : il créera
+          son compte et le bail lui sera rattaché automatiquement. Le lien expire dans 14 jours.
+        </p>
+        <div className="flex items-center gap-2">
+          <input
+            readOnly
+            value={url}
+            onFocus={(e) => e.currentTarget.select()}
+            className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+            aria-label="Lien d'invitation"
+          />
+          <Button type="button" onClick={() => void copy()}>
+            {copied ? 'Copié !' : 'Copier'}
+          </Button>
+        </div>
+        <div className="flex justify-end">
+          <Link to={`/properties/${propertyId}`}>
+            <Button variant="secondary">Retour au bien</Button>
+          </Link>
+        </div>
+      </div>
+    </Card>
+  );
 }
 
 export function LeaseCreatePage() {
   const { id: propertyId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [invitationUrl, setInvitationUrl] = useState<string | null>(null);
 
   const { data: property } = useQuery({
     queryKey: ['properties', propertyId],
@@ -60,11 +107,26 @@ export function LeaseCreatePage() {
         chargesAmount: values.chargesAmount,
         depositAmount: values.depositAmount,
       }),
-    onSuccess: () => {
+    onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: ['leases', propertyId] });
-      navigate(`/properties/${propertyId}`, { replace: true });
+      if (result.invitationUrl) {
+        setInvitationUrl(result.invitationUrl);
+      } else {
+        navigate(`/properties/${propertyId}`, { replace: true });
+      }
     },
   });
+
+  if (invitationUrl && propertyId) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        <h1 className="text-xl font-bold text-slate-900">
+          Créer un bail{property ? ` — ${property.label}` : ''}
+        </h1>
+        <InvitationLinkPanel url={invitationUrl} propertyId={propertyId} />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

@@ -42,6 +42,13 @@ dates de début/fin, statut. L'historique des mandats est conservé même après
 Bail : Property + Tenant, dates (`date`), loyer/charges/dépôt `numeric(12,2)`, statut.
 Règle métier : **un seul bail actif par bien** (vérifié au handler).
 
+### LeaseInvitation
+Invitation d'un locataire sans compte : à la création du bail, un utilisateur
+« placeholder » inactif (mot de passe inutilisable) et un bail **Pending** sont créés.
+`TokenHash` **unique** (SHA-256 du token 256 bits envoyé dans le lien), `ExpiresAtUtc`
+(14 jours), `AcceptedAtUtc` (usage unique), `InvitedById`. L'acceptation active le
+compte et le bail.
+
 ### Payment
 `LeaseId`, montant, **période = (PeriodYear, PeriodMonth)** avec index composite —
 un seul paiement complété par période (anti-doublon). `RecordedById` trace qui a saisi.

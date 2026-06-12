@@ -12,6 +12,7 @@
 | Anti-bruteforce | verrouillage de compte 15 min après 5 échecs **+** rate limiting 10 req/min/IP sur `/api/auth/*` |
 | Énumération d'utilisateurs | message d'erreur identique que le compte existe ou non |
 | Élévation de privilèges | le rôle `Admin` est rejeté à l'inscription (validateur) |
+| Invitations locataire | token 256 bits stocké **hashé SHA-256**, usage unique, expiration 14 j ; endpoints anonymes rate-limités ; token invalide/expiré/utilisé ⇒ 404 générique |
 
 ## Autorisation (RBAC + ownership)
 

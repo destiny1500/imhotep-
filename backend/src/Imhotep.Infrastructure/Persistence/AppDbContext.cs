@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Property> Properties => Set<Property>();
     public DbSet<ManagementContract> ManagementContracts => Set<ManagementContract>();
     public DbSet<Lease> Leases => Set<Lease>();
+    public DbSet<LeaseInvitation> LeaseInvitations => Set<LeaseInvitation>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<RentReceipt> RentReceipts => Set<RentReceipt>();
     public DbSet<Document> Documents => Set<Document>();

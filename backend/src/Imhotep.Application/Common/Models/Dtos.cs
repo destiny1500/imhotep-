@@ -39,6 +39,19 @@ public record LeaseDto(
 
 public record MyLeaseDto(LeaseDto Lease, PropertyDto Property, string OwnerName, string? AgencyName);
 
+/// <summary>InvitationUrl is set when the tenant had no account: the lease is
+/// pending and the link must reach the tenant (also e-mailed).</summary>
+public record CreateLeaseResultDto(LeaseDto Lease, string? InvitationUrl);
+
+public record InvitationInfoDto(
+    string Email,
+    string PropertyLabel,
+    string City,
+    decimal RentAmount,
+    decimal ChargesAmount,
+    DateOnly StartDate,
+    string OwnerName);
+
 public record PaymentDto(
     Guid Id,
     Guid LeaseId,

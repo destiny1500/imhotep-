@@ -1,5 +1,5 @@
 import { api } from '@/shared/api/client';
-import type { Lease, MyLease } from '@/shared/types/api';
+import type { CreateLeaseResult, Lease, MyLease } from '@/shared/types/api';
 
 export async function getLeases(propertyId: string): Promise<Lease[]> {
   const { data } = await api.get<Lease[]>('/api/leases', { params: { propertyId } });
@@ -16,8 +16,8 @@ export interface CreateLeasePayload {
   depositAmount: number;
 }
 
-export async function createLease(payload: CreateLeasePayload): Promise<Lease> {
-  const { data } = await api.post<Lease>('/api/leases', payload);
+export async function createLease(payload: CreateLeasePayload): Promise<CreateLeaseResult> {
+  const { data } = await api.post<CreateLeaseResult>('/api/leases', payload);
   return data;
 }
 

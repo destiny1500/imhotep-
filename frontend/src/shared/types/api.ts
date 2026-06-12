@@ -48,6 +48,8 @@ export interface PropertyInput {
   chargesAmount: number;
 }
 
+export type LeaseStatus = 'Active' | 'Terminated' | 'Pending';
+
 export interface Lease {
   id: string;
   propertyId: string;
@@ -58,6 +60,25 @@ export interface Lease {
   rentAmount: number;
   chargesAmount: number;
   depositAmount: number;
+  status?: LeaseStatus;
+}
+
+/** Response of POST /api/leases. `invitationUrl` is set when the tenant had no
+ * account yet: the lease is pending until the invitation is accepted. */
+export interface CreateLeaseResult {
+  lease: Lease;
+  invitationUrl: string | null;
+}
+
+/** What an invited tenant sees before creating their account. */
+export interface InvitationInfo {
+  email: string;
+  propertyLabel: string;
+  city: string;
+  rentAmount: number;
+  chargesAmount: number;
+  startDate: string;
+  ownerName: string;
 }
 
 /** Tenant's active lease including the property (housing info page). */

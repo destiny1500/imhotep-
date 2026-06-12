@@ -29,8 +29,15 @@ Les enums circulent en chaînes (`"Owner"`, `"Apartment"`, `"BankTransfer"`).
 | Méthode | Route | Rôles | Notes |
 |---|---|---|---|
 | GET | `/api/leases?propertyId=` | Owner, Agency, Admin | |
-| POST | `/api/leases` | Owner, Agency | `{propertyId, tenantEmail, startDate, endDate?, rentAmount, chargesAmount, depositAmount}` · 409 si bail actif existant |
+| POST | `/api/leases` | Owner, Agency | `{propertyId, tenantEmail, startDate, endDate?, rentAmount, chargesAmount, depositAmount}` → 201 `{lease, invitationUrl?}` · si l'e-mail n'a pas de compte locataire : bail **Pending** + lien d'invitation (14 j) retourné et envoyé par e-mail · 409 si bail actif/en attente existant ou e-mail d'un compte non-locataire |
 | GET | `/api/leases/my` | Tenant | bail actif + infos logement + bailleur/agence |
+
+## Invitations locataire (anonyme, token 256 bits en chemin, rate-limité)
+
+| Méthode | Route | Notes |
+|---|---|---|
+| GET | `/api/invitations/{token}` | aperçu de l'offre (e-mail, bien, loyer, bailleur) ; 404 si token inconnu/expiré/utilisé |
+| POST | `/api/invitations/{token}/accept` | `{firstName, lastName, password}` → 201 `{accessToken, refreshToken, user}` : active le compte **et** le bail, connecte le locataire ; token à usage unique |
 
 ## Paiements
 

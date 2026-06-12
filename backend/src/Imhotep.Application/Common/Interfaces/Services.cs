@@ -38,3 +38,16 @@ public interface IClock
 {
     DateTime UtcNow { get; }
 }
+
+/// <summary>Builds the public frontend URL a tenant follows to accept an invitation.</summary>
+public interface IInvitationLinkBuilder
+{
+    string BuildInvitationUrl(string rawToken);
+}
+
+/// <summary>Outbound e-mail. The default implementation only logs; plug an SMTP/API
+/// provider here in production.</summary>
+public interface IEmailSender
+{
+    Task SendAsync(string to, string subject, string body, CancellationToken ct);
+}

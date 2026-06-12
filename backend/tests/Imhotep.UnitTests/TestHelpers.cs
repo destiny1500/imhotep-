@@ -20,6 +20,22 @@ public sealed class FakeCurrentUser : ICurrentUserService
     public bool IsAuthenticated => UserId.HasValue;
 }
 
+public sealed class FakeLinkBuilder : IInvitationLinkBuilder
+{
+    public string BuildInvitationUrl(string rawToken) => $"https://app.test/invitation/{rawToken}";
+}
+
+public sealed class FakeEmailSender : IEmailSender
+{
+    public List<(string To, string Subject, string Body)> Sent { get; } = [];
+
+    public Task SendAsync(string to, string subject, string body, CancellationToken ct)
+    {
+        Sent.Add((to, subject, body));
+        return Task.CompletedTask;
+    }
+}
+
 /// <summary>SQLite in-memory database that lives as long as the helper (connection kept open).</summary>
 public sealed class TestDb : IDisposable
 {
