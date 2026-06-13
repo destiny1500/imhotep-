@@ -7,7 +7,7 @@ notifications et tableaux de bord.
 ## Monorepo
 
 ```
-backend/    API .NET 8 — Clean Architecture, CQRS (MediatR), FastEndpoints, EF Core + PostgreSQL
+backend/    API .NET 10 — Clean Architecture, CQRS (MediatR), FastEndpoints, EF Core + PostgreSQL
 frontend/   SPA React 18 — TypeScript, Vite, TailwindCSS, React Query, Zustand
 docs/       Plans techniques, schémas d'architecture, modèle de données, sécurité, API
 ```
@@ -15,7 +15,7 @@ docs/       Plans techniques, schémas d'architecture, modèle de données, séc
 ## Démarrage rapide
 
 ### Prérequis
-- .NET SDK 8.0, Node.js ≥ 20, Docker (pour PostgreSQL)
+- .NET SDK 10.0, Node.js ≥ 20, Docker (pour PostgreSQL)
 
 ### Base de données + API
 ```bash

@@ -4,7 +4,7 @@
 
 ```
 ┌────────────────────────┐        HTTPS / JSON         ┌─────────────────────────────┐
-│  SPA React 18 (Vite)   │ ──────────────────────────▶ │  API .NET 8 (FastEndpoints) │
+│  SPA React 18 (Vite)   │ ──────────────────────────▶ │  API .NET 10 (FastEndpoints)│
 │  React Query / Zustand │ ◀── JWT access (15 min) ─── │  + JWT Bearer + RateLimiter │
 └────────────────────────┘     refresh rotatif (7 j)   └──────────────┬──────────────┘
                                                                       │ MediatR (CQRS)
