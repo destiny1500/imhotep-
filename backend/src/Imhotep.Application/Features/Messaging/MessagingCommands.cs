@@ -42,6 +42,13 @@ public class StartConversationCommandHandler(IAppDbContext db, ICurrentUserServi
             .FirstOrDefaultAsync(u => u.Id == request.ParticipantUserId && u.IsActive, ct)
             ?? throw new NotFoundException(nameof(User), request.ParticipantUserId);
 
+        // A conversation may only be opened between people a property links together:
+        // an owner writes to their tenants or their agency, a tenant writes to their
+        // owner or the managing agency. Admins are exempt (platform oversight).
+        if (currentUser.Role != UserRole.Admin && !await AreConnectedAsync(userId, other.Id, ct))
+            throw new ForbiddenAccessException(
+                "Vous ne pouvez écrire qu'aux personnes liées à vos biens : un propriétaire à ses locataires ou à son agence, un locataire à son propriétaire ou à l'agence gestionnaire.");
+
         var now = clock.UtcNow;
         var conversation = new Conversation
         {
@@ -72,6 +79,25 @@ public class StartConversationCommandHandler(IAppDbContext db, ICurrentUserServi
         await db.SaveChangesAsync(ct);
         return conversation.Id;
     }
+
+    /// <summary>
+    /// True when a property links the two users in compatible roles, which is the only
+    /// case in which they are allowed to message each other:
+    /// owner ↔ tenant (active lease), owner ↔ managing agency, or managing agency ↔ tenant.
+    /// The relation is symmetric, so it covers both directions of the rule.
+    /// </summary>
+    private Task<bool> AreConnectedAsync(Guid a, Guid b, CancellationToken ct) =>
+        db.Properties.AsNoTracking().AnyAsync(p =>
+            // owner ↔ managing agency
+            (p.OwnerId == a && p.ManagingAgencyId == b) ||
+            (p.OwnerId == b && p.ManagingAgencyId == a) ||
+            // owner ↔ tenant
+            (p.OwnerId == a && p.Leases.Any(l => l.TenantId == b && l.Status == LeaseStatus.Active)) ||
+            (p.OwnerId == b && p.Leases.Any(l => l.TenantId == a && l.Status == LeaseStatus.Active)) ||
+            // managing agency ↔ tenant
+            (p.ManagingAgencyId == a && p.Leases.Any(l => l.TenantId == b && l.Status == LeaseStatus.Active)) ||
+            (p.ManagingAgencyId == b && p.Leases.Any(l => l.TenantId == a && l.Status == LeaseStatus.Active)),
+            ct);
 }
 
 public record SendMessageCommand(Guid ConversationId, string Body) : IRequest<Guid>, IAuditableCommand
