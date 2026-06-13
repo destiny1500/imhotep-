@@ -18,6 +18,19 @@ public class ListConversationsEndpoint(ISender sender) : EndpointWithoutRequest<
     }
 }
 
+public class ListContactsEndpoint(ISender sender) : EndpointWithoutRequest<IReadOnlyList<ParticipantDto>>
+{
+    public override void Configure()
+    {
+        Get("/api/conversations/contacts");
+    }
+
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        await SendOkAsync(await sender.Send(new ListContactsQuery(), ct), ct);
+    }
+}
+
 public record StartConversationRequest(Guid ParticipantUserId, Guid? PropertyId, string Subject, string Body);
 public record StartConversationResponse(Guid ConversationId);
 

@@ -1,8 +1,14 @@
 import { api } from '@/shared/api/client';
-import type { Conversation, Message } from '@/shared/types/api';
+import type { Conversation, ConversationParticipant, Message } from '@/shared/types/api';
 
 export async function getConversations(): Promise<Conversation[]> {
   const { data } = await api.get<Conversation[]>('/api/conversations');
+  return data;
+}
+
+/** People the current user is allowed to start a conversation with. */
+export async function getContacts(): Promise<ConversationParticipant[]> {
+  const { data } = await api.get<ConversationParticipant[]>('/api/conversations/contacts');
   return data;
 }
 

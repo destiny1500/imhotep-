@@ -146,5 +146,31 @@ public class MessagingAuthorizationTests : IDisposable
         id.Should().NotBeEmpty();
     }
 
+    [Fact]
+    public async Task Contacts_list_exposes_only_the_people_one_may_write_to()
+    {
+        var owner = Seed.User(UserRole.Owner, "owner@test.fr");
+        var agency = Seed.User(UserRole.Agency, "agency@test.fr");
+        var tenant = Seed.User(UserRole.Tenant, "tenant@test.fr");
+        var otherTenant = Seed.User(UserRole.Tenant, "other@test.fr");
+        var property = Seed.Property(owner);
+        property.ManagingAgencyId = agency.Id;
+        var lease = Seed.Lease(property, tenant);
+        _db.Context.AddRange(owner, agency, tenant, otherTenant, property, lease);
+        await _db.Context.SaveChangesAsync();
+
+        // The owner sees their tenant and their agency, never an unrelated tenant.
+        _currentUser.UserId = owner.Id;
+        var ownerContacts = await new ListContactsQueryHandler(_db.Context, _currentUser)
+            .Handle(new ListContactsQuery(), CancellationToken.None);
+        ownerContacts.Select(c => c.Id).Should().BeEquivalentTo([agency.Id, tenant.Id]);
+
+        // The tenant sees their owner and the managing agency, never the other tenant.
+        _currentUser.UserId = tenant.Id;
+        var tenantContacts = await new ListContactsQueryHandler(_db.Context, _currentUser)
+            .Handle(new ListContactsQuery(), CancellationToken.None);
+        tenantContacts.Select(c => c.Id).Should().BeEquivalentTo([owner.Id, agency.Id]);
+    }
+
     public void Dispose() => _db.Dispose();
 }

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { requiredString } from '@/shared/lib/zod';
 
 export const newConversationSchema = z.object({
-  participantUserId: requiredString("L'identifiant du destinataire"),
+  participantUserId: requiredString('Le destinataire'),
   subject: requiredString('Le sujet'),
   body: requiredString('Le message'),
 });
